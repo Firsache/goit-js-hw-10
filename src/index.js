@@ -24,7 +24,7 @@ function onInputSearch(evt) {
                 return;
             } else if (data.length >= 2) {
                 refs.countryListEl.style.display = "block";
-                refs.countryInfoEl.style.display = "";
+                refs.countryInfoEl.innerHTML = "";
                 renderCountryList(data);
             } else {
                 // refs.countryListEl.classList = 'display:none';
