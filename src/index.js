@@ -1,5 +1,5 @@
 import './css/styles.css';
-import {debounce} from 'lodash.debounce'
+import debounce from 'lodash.debounce';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { fetchCountries } from './fetchCountries';
 
@@ -11,25 +11,58 @@ const refs = {
 const DEBOUNCE_DELAY = 300;
 
 function onInputSearch(evt) {
-    const query = evt.target.value;
-    console.log(query);
+    let query = evt.target.value.trim();
+    if (!query) {
+        refs.countryInfoEl.innerHTML = '';
+        return;
+    }
 
     fetchCountries(query)
         .then(data => {
-            // console.log(data);
-        renderCountryCardMarkUp(data) // array of countries, need to use map + join + render markup
+            if (data.length > 10) {
+                Notify.info('Too many matches found. Please enter a more specific name.');
+                return;
+            } else if (data.length >= 2) {
+                refs.countryListEl.style.display = "block";
+                refs.countryInfoEl.style.display = "none";0
+                renderCountryList(data);
+            } else {
+                // refs.countryListEl.classList = 'display:none';
+                refs.countryListEl.style.display = "none";
+                renderCountryCardMarkUp(data);
+            }            
     })
-    .catch(err => console.log(err));
+    .catch(err => Notify.failure('Oops, there is no country with that name'));
+}
+
+function renderCountryList(data) {
+    const markupCountry = data.map(({name, flags}) => {
+        return `
+        <li>
+        <img src="${flags.svg}" alt="${name.official}" width="35">
+        <span>${name.official}</span>
+        </li>`
+    }).join('');
+
+    refs.countryListEl.innerHTML = markupCountry;
 }
 
 function renderCountryCardMarkUp(data) {
-    const markupCountry = data.map(({name, capital, population, flags, languages}) => {
-        return `${name.official} ${flags.svg}`
+    const markupCountry = data.map(({ name, capital, population, flags, languages }) => {        
+        return `
+        <div class="country-header">
+        <img src="${flags.svg}" alt="${name.official}" width="40">
+        <h1>${name.official}</h1>
+        </div>        
+        <p><b>Capital:</b> ${capital}</p>
+        <p><b>Population:</b> ${population}</p>
+        <p><b>Languages:</b> ${Object.values(languages).join(', ')}</p>
+        `
     }).join('');
 
     refs.countryInfoEl.innerHTML = markupCountry;
 }
 
-Notify.info('Too many matches found. Please enter a more specific name.')
-Notify.failure('Oops, there is no country with that name');
-refs.searchInputEl.addEventListener('input', onInputSearch);
+
+
+refs.searchInputEl.addEventListener('input', debounce(onInputSearch, DEBOUNCE_DELAY));
