@@ -27,7 +27,6 @@ function onInputSearch(evt) {
                 refs.countryInfoEl.innerHTML = "";
                 renderCountryList(data);
             } else {
-                // refs.countryListEl.classList = 'display:none';
                 refs.countryListEl.style.display = "none";
                 renderCountryCardMarkUp(data);
             }            
